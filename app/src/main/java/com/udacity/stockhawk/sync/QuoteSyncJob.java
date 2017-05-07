@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 
@@ -31,7 +33,8 @@ import yahoofinance.quotes.stock.StockQuote;
 public final class QuoteSyncJob {
 
     private static final int ONE_OFF_ID = 2;
-    private static final String ACTION_DATA_UPDATED = "com.udacity.stockhawk.ACTION_DATA_UPDATED";
+    public static final String ACTION_DATA_UPDATED = "com.udacity.stockhawk.ACTION_DATA_UPDATED";
+    public static final String SYMBOLS_NOT_FOUND_KEY = "symbolsNotFoundKey";
     private static final int PERIOD = 300000;
     private static final int INITIAL_BACKOFF = 10000;
     private static final int PERIODIC_ID = 1;
@@ -48,6 +51,7 @@ public final class QuoteSyncJob {
         Calendar to = Calendar.getInstance();
         from.add(Calendar.YEAR, -YEARS_OF_HISTORY);
 
+        List<String> notFoundSymbols = new ArrayList<>();
         try {
 
             Set<String> stockPref = PrefUtils.getStocks(context);
@@ -73,6 +77,11 @@ public final class QuoteSyncJob {
 
 
                 Stock stock = quotes.get(symbol);
+                if (stock == null || Strings.isNullOrEmpty(stock.getName())) {
+                    notFoundSymbols.add(symbol);
+                    PrefUtils.removeStock(context, symbol);
+                    continue;
+                }
                 StockQuote quote = stock.getQuote();
 
                 float price = quote.getPrice().floatValue();
@@ -111,6 +120,7 @@ public final class QuoteSyncJob {
                             quoteCVs.toArray(new ContentValues[quoteCVs.size()]));
 
             Intent dataUpdatedIntent = new Intent(ACTION_DATA_UPDATED);
+            dataUpdatedIntent.putExtra(SYMBOLS_NOT_FOUND_KEY, Joiner.on(", ").join(notFoundSymbols));
             context.sendBroadcast(dataUpdatedIntent);
 
         } catch (IOException exception) {

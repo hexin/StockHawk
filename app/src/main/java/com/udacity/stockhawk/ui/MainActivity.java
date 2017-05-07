@@ -1,7 +1,9 @@
 package com.udacity.stockhawk.ui;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -20,6 +22,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.common.base.Strings;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
@@ -46,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @BindView(R.id.error)
     TextView error;
     private StockAdapter adapter;
+    private BadSymbolsBroadcastReceiver broadcastReceiver = new BadSymbolsBroadcastReceiver();
 
     @Override
     public void onClick(String symbol) {
@@ -88,6 +92,22 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }).attachToRecyclerView(stockRecyclerView);
 
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(broadcastReceiver, new IntentFilter(QuoteSyncJob.ACTION_DATA_UPDATED));
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(broadcastReceiver);
+    }
+
+    void showMessageStockNotFound(String symbol) {
+        Toast.makeText(this, "Cannot find stock with symbol: " + symbol, Toast.LENGTH_LONG).show();
     }
 
     private boolean networkUp() {
@@ -191,5 +211,15 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private class BadSymbolsBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String stringExtra = intent.getStringExtra(QuoteSyncJob.SYMBOLS_NOT_FOUND_KEY);
+            if (!Strings.isNullOrEmpty(stringExtra)) {
+                MainActivity.this.showMessageStockNotFound(stringExtra);
+            }
+        }
     }
 }
