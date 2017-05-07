@@ -5,14 +5,35 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.common.base.Function;
+import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,6 +53,8 @@ public class QuoteActivity extends AppCompatActivity implements LoaderManager.Lo
     TextView priceTextView;
     @BindView(R.id.change)
     TextView changeTextView;
+    @BindView(R.id.history_chart)
+    LineChart historyChart;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -68,6 +91,47 @@ public class QuoteActivity extends AppCompatActivity implements LoaderManager.Lo
             changeTextView.setBackgroundResource(R.drawable.percent_change_pill_red);
         }
         changeTextView.setText(Float.toString(rawAbsoluteChange));
+        String stringifiedHistory = data.getString(data.getColumnIndex(Contract.Quote.COLUMN_HISTORY));
+        setChartValues(convertStringifiedHistoryToPairs(stringifiedHistory));
+    }
+
+    private void setChartValues(List<Pair<Date, Float>> historyPairs) {
+        Collections.sort(historyPairs, new Comparator<Pair<Date, Float>>() {
+            @Override
+            public int compare(Pair<Date, Float> o1, Pair<Date, Float> o2) {
+                return o1.first.compareTo(o2.first);
+            }
+        });
+        final Pair<Date, Float> firstPair = Iterables.getFirst(historyPairs, null);
+        Iterable<Entry> transformedToEntries = Iterables.transform(historyPairs, new Function<Pair<Date, Float>, Entry>() {
+            @Override
+            public Entry apply(Pair<Date, Float> input) {
+                float xAxisVal = (float) (input.first.getTime() - firstPair.first.getTime());
+                return new Entry(xAxisVal, input.second);
+            }
+        });
+        LineDataSet dataSet = new LineDataSet(Lists.newArrayList(transformedToEntries), "Quotes");
+        LineData data = new LineData(dataSet);
+        dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
+        historyChart.setData(data);
+        historyChart.invalidate();
+    }
+
+    private List<Pair<Date, Float>> convertStringifiedHistoryToPairs(String stringifiedHistory) {
+        if (Strings.isNullOrEmpty(stringifiedHistory)) {
+            return Collections.EMPTY_LIST;
+        }
+        List<String> splitedToEntries = Arrays.asList(stringifiedHistory.split("\n"));
+        Iterable<Pair<Date, Float>> transformed = Iterables.transform(splitedToEntries, new Function<String, Pair<Date, Float>>() {
+            @Override
+            public Pair<Date, Float> apply(String input) {
+                String[] splitedEntry = input.trim().split(", ");
+                Date date = new Date(Long.valueOf(splitedEntry[0].trim()));
+                Float closed = Float.valueOf(splitedEntry[1].trim());
+                return new Pair<>(date, closed);
+            }
+        });
+        return Lists.newArrayList(transformed);
     }
 
     @Override
