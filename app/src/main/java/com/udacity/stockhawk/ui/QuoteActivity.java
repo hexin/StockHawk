@@ -8,6 +8,8 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +25,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
+import com.udacity.stockhawk.data.PrefUtils;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -57,6 +60,7 @@ public class QuoteActivity extends AppCompatActivity implements LoaderManager.Lo
         percentageFormat.setPositivePrefix("+");
     }
     private String mSymbol;
+    private QuoteData mQuoteData;
     @BindView(R.id.symbol)
     TextView symbolTextView;
     @BindView(R.id.price)
@@ -90,18 +94,18 @@ public class QuoteActivity extends AppCompatActivity implements LoaderManager.Lo
             return;
         }
         data.moveToFirst();
-        QuoteData quoteData = new QuoteData(data);
-        setSummaryContent(quoteData);
-        setChartValues(prepareChartValues(quoteData));
-        initializeChartView(quoteData);
+        mQuoteData = new QuoteData(data);
+        setSummaryContent(mQuoteData);
+        setChartValues(prepareChartValues(mQuoteData));
+        initializeChartView(mQuoteData);
     }
 
     private void initializeChartView(QuoteData quoteData) {
         XAxis xAxis = historyChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setTextSize(13f);
-        xAxis.setLabelRotationAngle(45f);
-        xAxis.setTextColor(Color.RED);
+        xAxis.setTextSize(12f);
+        xAxis.setLabelRotationAngle(55f);
+        xAxis.setTextColor(Color.WHITE);
         xAxis.setDrawAxisLine(true);
         xAxis.setDrawGridLines(true);
         xAxis.setValueFormatter(new DateChartFormatter(quoteData.getFirstSortedHistoryPair().first));
@@ -123,14 +127,18 @@ public class QuoteActivity extends AppCompatActivity implements LoaderManager.Lo
         } else {
             changeTextView.setBackgroundResource(R.drawable.percent_change_pill_red);
         }
-        changeTextView.setText(dollarFormatWithPlus.format(quoteData.getAbsoluteChange()));
+        if (PrefUtils.getDisplayMode(this)
+                .equals(getString(R.string.pref_display_mode_absolute_key))) {
+            changeTextView.setText(dollarFormatWithPlus.format(quoteData.getAbsoluteChange()));
+        } else {
+            changeTextView.setText(percentageFormat.format(quoteData.getPercentageChange() / 100));
+        }
     }
 
     private void setChartValues(List<Entry> chartValues) {
         LineDataSet dataSet = new LineDataSet(chartValues, "Quotes");
         LineData lineData = new LineData(dataSet);
         dataSet.setColors(Color.YELLOW);
-        dataSet.setLabel("Quotes");
         historyChart.setData(lineData);
         historyChart.invalidate();
     }
@@ -223,6 +231,36 @@ public class QuoteActivity extends AppCompatActivity implements LoaderManager.Lo
                 }
             });
             return Lists.newArrayList(transformed);
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_activity_settings, menu);
+        MenuItem item = menu.findItem(R.id.action_change_units);
+        setDisplayModeMenuItemIcon(item);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_change_units) {
+            PrefUtils.toggleDisplayMode(this);
+            setDisplayModeMenuItemIcon(item);
+            setSummaryContent(mQuoteData);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void setDisplayModeMenuItemIcon(MenuItem item) {
+        if (PrefUtils.getDisplayMode(this)
+                .equals(getString(R.string.pref_display_mode_absolute_key))) {
+            item.setIcon(R.drawable.ic_percentage);
+        } else {
+            item.setIcon(R.drawable.ic_dollar);
         }
     }
 }
