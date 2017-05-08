@@ -6,15 +6,16 @@
     android:gravity="center_vertical"
     android:orientation="horizontal"
     android:paddingLeft="16dp"
-    android:paddingRight="16dp">
+    android:paddingRight="16dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp">
 
     <TextView
         android:id="@+id/symbol"
         style="@style/StockSymbolTextStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="start|center_vertical"
-        tools:text="GOOG" />
+        android:gravity="start|center_vertical" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -36,8 +37,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/percent_change_pill_green"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
-            tools:text="100%" />
+            android:paddingLeft="@dimen/quote_change_padding"
+            android:paddingStart="@dimen/quote_change_padding"
+            android:paddingRight="@dimen/quote_change_padding"
+            android:paddingEnd="@dimen/quote_change_padding"  />
     </LinearLayout>
 </LinearLayout>
