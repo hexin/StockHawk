@@ -119,16 +119,18 @@ public class QuoteActivity extends AppCompatActivity implements LoaderManager.Lo
         XAxis xAxis = historyChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setTextSize(12f);
-        xAxis.setLabelRotationAngle(55f);
+        xAxis.setLabelRotationAngle(90f);
         xAxis.setTextColor(Color.WHITE);
         xAxis.setDrawAxisLine(true);
         xAxis.setDrawGridLines(true);
+        xAxis.setLabelCount(15);
         xAxis.setValueFormatter(new DateChartFormatter(quoteData.getFirstSortedHistoryPair().first));
 
         YAxis left = historyChart.getAxisLeft();
         left.setTextColor(Color.WHITE);
         left.setTextSize(13f);
         left.setValueFormatter(new MoneyChartFormatter(dollarFormat));
+        left.setLabelCount(getResources().getInteger(R.integer.quote_chart_yaxis_labels_amount));
 
         YAxis yAxisRight = historyChart.getAxisRight();
         yAxisRight.setEnabled(false);

@@ -6,4 +6,5 @@
     <dimen name="widget_detail_min_resize_height">@dimen/widget_detail_default_height</dimen>
     <dimen name="quote_change_padding">3dp</dimen>
     <dimen name="quote_chart_margin">10dp</dimen>
+    <dimen name="quote_chart_height">200dp</dimen>
 </resources>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="quote_chart_height">@dimen/match_parent</dimen>
+</resources>
