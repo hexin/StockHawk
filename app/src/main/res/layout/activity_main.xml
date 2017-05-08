@@ -43,6 +43,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:layout_margin="@dimen/widget_margin"
         android:textAppearance="@android:style/TextAppearance.Medium"
         android:visibility="gone"
         tools:text="@string/error_message" />

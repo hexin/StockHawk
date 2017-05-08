@@ -1,7 +1,9 @@
 package com.udacity.stockhawk.ui;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -75,8 +77,21 @@ public class QuoteActivity extends AppCompatActivity implements LoaderManager.Lo
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_quote);
         ButterKnife.bind(this);
-        mSymbol = getIntent().getStringExtra(EXTRAS_SYMBOL_KEY);
+        mSymbol = findSymbol(getIntent());
         getSupportLoaderManager().initLoader(QUOTE_LOADER, null, this);
+    }
+
+    private String findSymbol(Intent intent) {
+        String result = intent.getStringExtra(EXTRAS_SYMBOL_KEY);
+        if (Strings.isNullOrEmpty(mSymbol) && getIntent().getData() != null) {
+            Uri uri = getIntent().getData();
+            String lastPathSegment = uri.getLastPathSegment();
+            boolean lastSegmentInSymbols = PrefUtils.getStocks(this).contains(lastPathSegment);
+            if (lastSegmentInSymbols) {
+                result = lastPathSegment;
+            }
+        }
+        return result;
     }
 
     @Override
@@ -90,7 +105,7 @@ public class QuoteActivity extends AppCompatActivity implements LoaderManager.Lo
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data.getCount() != 1) {
-            Toast.makeText(this, "Something bad happened to data", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getString(R.string.broken_quote_data_message), Toast.LENGTH_LONG).show();
             return;
         }
         data.moveToFirst();
@@ -136,7 +151,7 @@ public class QuoteActivity extends AppCompatActivity implements LoaderManager.Lo
     }
 
     private void setChartValues(List<Entry> chartValues) {
-        LineDataSet dataSet = new LineDataSet(chartValues, "Quotes");
+        LineDataSet dataSet = new LineDataSet(chartValues, getString(R.string.line_data_label));
         LineData lineData = new LineData(dataSet);
         dataSet.setColors(Color.YELLOW);
         historyChart.setData(lineData);

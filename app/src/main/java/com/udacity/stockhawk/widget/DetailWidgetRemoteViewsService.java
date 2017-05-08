@@ -14,6 +14,7 @@ import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 import com.udacity.stockhawk.ui.MainActivity;
+import com.udacity.stockhawk.ui.QuoteActivity;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -82,8 +83,8 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
 //                    setRemoteContentDescription(views, description);
                 }
-                //----------------------------------------------------------------------------------
-                views.setTextViewText(R.id.symbol, data.getString(Contract.Quote.POSITION_SYMBOL));
+                String symbol = data.getString(Contract.Quote.POSITION_SYMBOL);
+                views.setTextViewText(R.id.symbol, symbol);
                 views.setTextViewText(R.id.price, dollarFormat.format(data.getFloat(Contract.Quote.POSITION_PRICE)));
 
 
@@ -105,10 +106,11 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
                 } else {
                     views.setTextViewText(R.id.change, percentage);
                 }
-                //----------------------------------------------------------------------------------
 
-                final Intent fillInIntent = new Intent(getApplicationContext(), MainActivity.class);
-                views.setOnClickFillInIntent(R.id.widget_list, fillInIntent);
+                final Intent fillInIntent = new Intent();
+                fillInIntent.setData(Contract.Quote.makeUriForStock(symbol));
+                fillInIntent.putExtra(QuoteActivity.EXTRAS_SYMBOL_KEY, symbol);
+                views.setOnClickFillInIntent(R.id.widget_list_item, fillInIntent);
                 return views;
             }
 

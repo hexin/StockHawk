@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         StockAdapter.StockAdapterOnClickHandler {
 
     private static final int STOCK_LOADER = 0;
+    private static final String STOCK_DIALOG_TAG = "StockDialogFragment";
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.recycler_view)
     RecyclerView stockRecyclerView;
@@ -88,6 +89,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 String symbol = adapter.getSymbolAtPosition(viewHolder.getAdapterPosition());
                 PrefUtils.removeStock(MainActivity.this, symbol);
                 getContentResolver().delete(Contract.Quote.makeUriForStock(symbol), null, null);
+                if (PrefUtils.getStocks(MainActivity.this).isEmpty()) {
+                    error.setText(getString(R.string.error_no_stocks));
+                    error.setVisibility(View.VISIBLE);
+                }
             }
         }).attachToRecyclerView(stockRecyclerView);
 
@@ -107,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     void showMessageStockNotFound(String symbol) {
-        Toast.makeText(this, "Cannot find stock with symbol: " + symbol, Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getString(R.string.cannot_find_symbols_message, symbol), Toast.LENGTH_LONG).show();
     }
 
     private boolean networkUp() {
@@ -139,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     public void button(@SuppressWarnings("UnusedParameters") View view) {
-        new AddStockDialog().show(getFragmentManager(), "StockDialogFragment");
+        new AddStockDialog().show(getFragmentManager(), STOCK_DIALOG_TAG);
     }
 
     void addStock(String symbol) {
@@ -171,6 +176,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         if (data.getCount() != 0) {
             error.setVisibility(View.GONE);
+        } else {
+
         }
         adapter.setCursor(data);
     }
