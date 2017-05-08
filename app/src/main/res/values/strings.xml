@@ -33,4 +33,7 @@
     <string name="toast_no_connectivity">Will refresh when network available.</string>
     <string name="title_activity_quote">Quotes History</string>
 
+
+    <string name="title_widget_detail">Stock Quotes</string>
+    <string name="empty_widget_detail">No stocks added!</string>
 </resources>
