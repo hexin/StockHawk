@@ -19,7 +19,7 @@
 
 
     <string name="action_change_units">@string/pref_display_mode_key</string>
-
+    <string name="action_change_units_title">Change units</string>
 
     <string name="dialog_title">Add Stock</string>
     <string name="dialog_hint">Symbol (e.g. GOOG)</string>
@@ -36,4 +36,6 @@
 
     <string name="title_widget_detail">Stock Quotes</string>
     <string name="empty_widget_detail">No stocks added!</string>
+    <string name="fab_content_description">Add symbol</string>
+    <string name="error_message">Error message</string>
 </resources>

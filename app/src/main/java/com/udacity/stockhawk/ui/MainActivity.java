@@ -196,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_activity_settings, menu);
         MenuItem item = menu.findItem(R.id.action_change_units);
+        item.setTitle(getString(R.string.action_change_units_title));
         setDisplayModeMenuItemIcon(item);
         return true;
     }
